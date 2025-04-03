@@ -1,1 +1,4 @@
 __pycache__
+
+input_byte_files/*
+output_bit_files/*
