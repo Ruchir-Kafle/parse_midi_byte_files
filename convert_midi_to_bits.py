@@ -1,14 +1,14 @@
 import sys
 
+byte_data = []
+
 try:
     parse_file: str = sys.argv[1]
 
     try:
         if ".mid" in parse_file:
-            with open(f"input_byte_files/{parse_file}", "rb") as midi_file:
-                data = midi_file.read()
-                print(data)
-
+            with open(f"input_byte_files/{parse_file}", "rb") as data:
+                byte_data = [*(format(byte, '08b') for byte in data.read())]
         else:
             print("Please ensure: \n\tYour file has the file extension of .mid.")
 
@@ -17,3 +17,5 @@ try:
 
 except IndexError:
     print("Please enter the MIDI file as the first argument.")
+
+print(byte_data)
