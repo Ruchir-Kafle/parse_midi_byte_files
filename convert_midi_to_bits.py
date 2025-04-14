@@ -21,6 +21,7 @@ import sys, mido
 channel_lengths = {}
 channel_notes = {}
 meta_data = []
+total_time = 0
 
 midi_file_name = f"input_byte_files/{sys.argv[1]}"
 midi_file = mido.MidiFile(midi_file_name)
@@ -32,6 +33,10 @@ print(f"Format: {midi_file.type}, Tracks: {len(midi_file.tracks)}")
 for i, track in enumerate(midi_file.tracks):
     print(f"\nTrack {i}: {track.name}")
     for msg in track:
+        attributes = [attribute for attribute in msg.dict()]
+        if "time" in attributes:
+            total_time += msg.time
+
         if isinstance(msg, mido.Message):
             if msg.type == "note_on" or msg.type == "note_off":
                 channel_already_in_dict = False
