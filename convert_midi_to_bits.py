@@ -68,7 +68,7 @@ for note in populous_notes:
     messages = note_messages[populous_notes[note]]
     for i, message in enumerate(messages):
         if message["message"].type == "note_on":
-            json_data["notes"].append({"note": note - 1, "position": message["time"], "length": messages[i + 1]["time"] - message["time"]})
+            json_data["notes"].append({"note": note - 1, "position": message["time"], "length": (messages[i + 1]["time"] - message["time"])})
 
         # Not in use code, was working off the assumption that channels were being parsed instead of individual note channels.
         # As such, much of the code makes the assumption that there are multiple note on and offs simultaneously happen.
@@ -89,6 +89,8 @@ for note in populous_notes:
 
 
 with open("output_bit_files/output.json", "w") as file:
-    file.write(json.dump(json_data))
+    json.dump(json_data, file, indent=4)
 
 
+for x in populous_notes:
+    print(note_lengths[populous_notes[x]])
