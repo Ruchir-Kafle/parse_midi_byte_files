@@ -89,6 +89,6 @@ for note in populous_notes:
 
 
 with open("output_bit_files/output.json", "w") as file:
-    file.write(json.dumps(json_data))
+    file.write(json.dump(json_data))
 
 
