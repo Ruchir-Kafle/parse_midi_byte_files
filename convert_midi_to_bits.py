@@ -1,5 +1,7 @@
 import sys, mido, json
 
+# py -m convert_midi_to_bits {Song MIDI File Path} {Song Name} {Artist}
+
 # try:
 #     parse_file: str = sys.argv[1]
 
@@ -21,11 +23,12 @@ import sys, mido, json
 note_lengths = {}
 note_messages = {}
 track_tempos = {}
+times = {}
 
 populous_notes = {1: -1, 2: -1, 3: -1, 4: -1}
 
-midi_file_name = f"input_byte_files/{sys.argv[1]}"
-midi_file = mido.MidiFile(midi_file_name)
+midi_file_path = f"input_byte_files/{sys.argv[1]}"
+midi_file = mido.MidiFile(midi_file_path)
 
 # Print MIDI file details
 print(f"Format: {midi_file.type}, Tracks: {len(midi_file.tracks)}")
@@ -66,6 +69,7 @@ for i, track in enumerate(midi_file.tracks):
             meta_data.append(msg)
 
     track_tempos[i] = tempo_changes
+    times[i] = total_time
 
 for note in note_lengths:
     for populous_note in populous_notes:
@@ -76,7 +80,7 @@ for note in note_lengths:
             populous_notes[populous_note] = note
             break
 
-json_data = {"name": "", "artist": "", "seconds": 0, "units": 0, "track_tempos": track_tempos, "notes": []}
+json_data = {"name": sys.argv[2], "artist": sys.argv[3], "units": times, "track_tempos": track_tempos, "notes": []}
 for note in populous_notes:
     messages = note_messages[populous_notes[note]]
     for i, message in enumerate(messages):
@@ -99,8 +103,7 @@ for note in populous_notes:
         #     else:
         #         json_data["notes"].append({"note": note - 1, "position": message["time"], "length": 0})
 
-
-
-with open("output_bit_files/output.json", "w") as file:
+output_file_path = f"output_bit_files/{sys.argv[2]}.json"
+with open(output_file_path, "w") as file:
     json.dump(json_data, file, indent=4)
 
