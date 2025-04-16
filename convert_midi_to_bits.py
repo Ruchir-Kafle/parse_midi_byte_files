@@ -20,8 +20,9 @@ import sys, mido, json
 
 note_lengths = {}
 note_messages = {}
-meta_data = []
-total_time = 0
+track_tempos = {}
+
+populous_notes = {1: -1, 2: -1, 3: -1, 4: -1}
 
 midi_file_name = f"input_byte_files/{sys.argv[1]}"
 midi_file = mido.MidiFile(midi_file_name)
@@ -31,7 +32,11 @@ print(f"Format: {midi_file.type}, Tracks: {len(midi_file.tracks)}")
 
 # Read and print MIDI messages
 for i, track in enumerate(midi_file.tracks):
+    meta_data = []
+    total_time = 0
+    tempo_changes = {}
     print(f"\nTrack {i}: {track.name}")
+
     for msg in track:
         attributes = [attribute for attribute in msg.dict()]
         if "time" in attributes:
@@ -50,10 +55,18 @@ for i, track in enumerate(midi_file.tracks):
                 if not note_already_in_dict:
                     note_lengths[msg.note] = 1
                     note_messages[msg.note] = [{"time": total_time, "message": msg}]
+
             else:
                 meta_data.append(msg)
+        else:
+            meta_attributes = [meta_attribute for meta_attribute in msg.dict()]
+            if "tempo" in attributes:
+                tempo_changes[total_time] = msg.tempo
+            
+            meta_data.append(msg)
 
-populous_notes = {1: -1, 2: -1, 3: -1, 4: -1}
+    track_tempos[i] = tempo_changes
+
 for note in note_lengths:
     for populous_note in populous_notes:
         if populous_notes[populous_note] == -1:
@@ -63,7 +76,7 @@ for note in note_lengths:
             populous_notes[populous_note] = note
             break
 
-json_data = {"name": "", "artist": "", "seconds": 0, "units": 0, "notes": []}
+json_data = {"name": "", "artist": "", "seconds": 0, "units": 0, "track_tempos": track_tempos, "notes": []}
 for note in populous_notes:
     messages = note_messages[populous_notes[note]]
     for i, message in enumerate(messages):
@@ -91,6 +104,3 @@ for note in populous_notes:
 with open("output_bit_files/output.json", "w") as file:
     json.dump(json_data, file, indent=4)
 
-
-for x in populous_notes:
-    print(note_lengths[populous_notes[x]])
