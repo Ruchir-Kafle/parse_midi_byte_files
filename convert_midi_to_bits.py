@@ -22,7 +22,7 @@ import sys, mido, json
 
 note_lengths = {}
 note_messages = {}
-track_tempos = {}
+track_velocities = {}
 times = {}
 
 populous_notes = {1: -1, 2: -1, 3: -1, 4: -1}
@@ -36,14 +36,14 @@ print(f"Format: {midi_file.type}, Tracks: {len(midi_file.tracks)}")
 # Read and print MIDI messages
 for i, track in enumerate(midi_file.tracks):
     meta_data = []
-    total_time = 0
-    tempo_changes = {}
+    total_ticks = 0
+    velocity_changes = {}
     print(f"\nTrack {i}: {track.name}")
 
     for msg in track:
         attributes = [attribute for attribute in msg.dict()]
         if "time" in attributes:
-            total_time += msg.time
+            total_ticks += msg.time
 
         if isinstance(msg, mido.Message):
             if msg.type == "note_on" or msg.type == "note_off":
@@ -51,25 +51,25 @@ for i, track in enumerate(midi_file.tracks):
                 for note in note_lengths:
                     if note == msg.note:
                         note_lengths[msg.note] += 1
-                        note_messages[msg.note].append({"time": total_time, "message": msg})
+                        note_messages[msg.note].append({"time": total_ticks, "message": msg})
                         note_already_in_dict = True
                         break
                 
                 if not note_already_in_dict:
                     note_lengths[msg.note] = 1
-                    note_messages[msg.note] = [{"time": total_time, "message": msg}]
+                    note_messages[msg.note] = [{"time": total_ticks, "message": msg}]
 
             else:
                 meta_data.append(msg)
         else:
             meta_attributes = [meta_attribute for meta_attribute in msg.dict()]
             if "tempo" in attributes:
-                tempo_changes[total_time] = msg.tempo
+                velocity_changes[total_ticks] = midi_file.ticks_per_beat / (msg.tempo / 1_000_000)
             
             meta_data.append(msg)
 
-    track_tempos[i] = tempo_changes
-    times[i] = total_time
+    track_velocities[i] = velocity_changes
+    times[i] = total_ticks
 
 for note in note_lengths:
     for populous_note in populous_notes:
@@ -80,7 +80,7 @@ for note in note_lengths:
             populous_notes[populous_note] = note
             break
 
-json_data = {"name": sys.argv[2], "artist": sys.argv[3], "units": times, "track_tempos": track_tempos, "notes": []}
+json_data = {"name": sys.argv[2], "artist": sys.argv[3], "units": times, "track_velocities": track_velocities, "notes": []}
 for note in populous_notes:
     messages = note_messages[populous_notes[note]]
     for i, message in enumerate(messages):
@@ -106,4 +106,3 @@ for note in populous_notes:
 output_file_path = f"output_bit_files/{sys.argv[2]}.json"
 with open(output_file_path, "w") as file:
     json.dump(json_data, file, indent=4)
-
