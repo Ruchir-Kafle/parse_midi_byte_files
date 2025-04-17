@@ -80,7 +80,17 @@ for note in note_lengths:
             populous_notes[populous_note] = note
             break
 
-json_data = {"name": sys.argv[2], "artist": sys.argv[3], "units": times, "track_velocities": track_velocities, "notes": []}
+json_data = {"name": sys.argv[2], "artist": sys.argv[3], "units": {"keys": [], "values": []}, "track_velocities": {"keys": [], "values": []}, "notes": []}
+
+for track in times:
+    json_data["units"]["keys"].append(track)
+    json_data["units"]["values"].append(times[track])
+
+for track in track_velocities:
+    for time in track_velocities[track]:
+        json_data["track_velocities"]["keys"].append(time)
+        json_data["track_velocities"]["values"].append(track_velocities[track][time])
+
 for note in populous_notes:
     messages = note_messages[populous_notes[note]]
     for i, message in enumerate(messages):
